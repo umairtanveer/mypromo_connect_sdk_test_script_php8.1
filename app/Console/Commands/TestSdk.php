@@ -133,8 +133,8 @@ class TestSdk extends Command
         $design->setEditorUserHash(md5('hashing_string'));
         $design->setReturnUrl(config('connect.shop_url'));
         $design->setCancelUrl(config('connect.shop_url'));
-        $design->setSku('TESTPRODUCT-UPLOAD1');
-        $design->setIntent('upload');
+        $design->setSku('MP-F10005-C0000001');
+        $design->setIntent('customize');
         $design->setOptions([
             'example-key' => 'example-value'
         ]);
