@@ -202,6 +202,56 @@ class TestSdk extends Command
     public function testOrdersModule()
     {
         $this->startMessage('Orders module testing under development...');
+
+        $orderItem = new \MyPromo\Connect\SDK\Models\OrderItem();
+        $orderItem->setReference('your-reference');
+        $orderItem->setQuantity(35);
+        $orderItem->setOrderId(1);
+        $orderItem->setSku('product-sku');
+        $orderItem->setComment('comment for order item here');
+
+        # To add service item mention order_item_id in relation
+        $orderItemRelation = new \MyPromo\Connect\SDK\Models\OrderItemRelation();
+        $orderItemRelation->setOrderItemId(22);
+
+        # To set relation pass object of orderItemRelation after setting up order_item_id which is added previously in order
+        $orderItem->setRelation($orderItemRelation->toArray());
+
+
+        $designRepository = new DesignRepository($this->client);
+
+        $design = new Design();
+
+        try {
+            $hash = $designRepository->createEditorUserHash($design);
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+        }
+
+        if (!isset($hash['editor_user_hash'])) {
+            $this->error('Editor hash nbot found.');
+            return 0;
+        }
+
+        $design->setEditorUserHash($hash['editor_user_hash']);
+        $design->setReturnUrl('https://yourshop.com/basket/TPD123LD02LAXALOP/{DESIGNID}/add/{INTENT}/{USERHASH}/{INTENT}/{DESIGNID}');
+        $design->setCancelUrl('https://yourshop.com/product/TPD123LD02LAXALOP/design/{DESIGNID}/user/{USERHASH}');
+        $design->setSku('MP-F1-C0000005');
+        $design->setIntent('upload');
+
+        $designResponse = $designRepository->create($design);
+
+        $this->info("Editor start URL : " . $designResponse['editor_start_url']);
+
+        try {
+            $designResponse = $designRepository->submit($design->getId());
+        } catch (GuzzleException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        } catch (DesignException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
     }
 
     /**
