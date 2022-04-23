@@ -1,0 +1,227 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Exception;
+use GuzzleHttp\Client;
+use App\Services\ClientService;
+use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Console\Command;
+use MyPromo\Connect\SDK\Exceptions\DesignException;
+use MyPromo\Connect\SDK\Models\Design;
+use MyPromo\Connect\SDK\Repositories\Designs\DesignRepository;
+use Psr\Cache\InvalidArgumentException;
+
+class TestSdk extends Command
+{
+    /**
+     * The name and signature of the console command
+     *
+     * @var string
+     */
+    protected $signature = 'test:sdk';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'This script will test connect SDK all methods one by one.';
+
+    /**
+     * This will be the url which we used as connect endpoint to access data.
+     * You can set this in .env file against variable (CONNECT_ENDPOINT_URL)
+     *
+     * @var $connectEndPointUrl
+     */
+    protected $connectEndPointUrl;
+
+    /**
+     * @var ClientService
+     */
+    public $clientService;
+
+    /**
+     * @var CLient
+     */
+    public $client;
+
+    /**
+     * Create a new command instance.
+     *
+     * @return void
+     */
+    public function __construct(ClientService $clientService)
+    {
+        parent::__construct();
+        $this->clientService = $clientService;
+        $this->connectEndPointUrl = config('connect.endpoint_url');
+    }
+
+    /**
+     * Execute the console command.
+     *
+     * @return int
+     */
+    public function handle(): int
+    {
+        # Introduction to tool
+        $this->info('This script will test all methods of "Mypromo Connect SDK" ony by one!');
+        $this->info('Testing Start........');
+        $this->info('');
+
+        # Start Testing
+
+        # Test Connection
+        $this->makeConnectionWithClient();
+        $this->info('');
+
+        # Test Design Module
+        $this->testDesignModule();
+        $this->info('');
+
+        # Test Orders Module
+        $this->testOrdersModule();
+        $this->info('');
+
+        return 0;
+    }
+
+    /**
+     * This method will test and return connection of client with endpoint
+     */
+    public function makeConnectionWithClient()
+    {
+        $this->startMessage("Build client connection. This module will test and create connection with '{$this->connectEndPointUrl}'");
+        $clientId = config('connect.client_id');
+        $clientSecret = config('connect.client_secret');
+
+        if (empty($clientId) || empty($clientSecret)) {
+            $this->warn('Client ID or Client Secret is missing. Please fill this detail in .env file and try again!');
+            $this->stopMessage();
+        }
+
+        try {
+            $this->client = $this->clientService->connect($clientId, $clientSecret);
+            $status = $this->client->status();
+
+            if ($status['message'] !== 'OK') {
+                $this->warn('Connection failed!');
+                return 0;
+            }
+
+            $this->info('Connection created successfully!');
+        } catch (Exception $ex) {
+            $this->warn($ex->getMessage());
+            $this->stopMessage();
+        } catch (GuzzleException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+        }
+
+        $this->info('Client connection testing finished!');
+    }
+
+    /**
+     * This method will test design API/Module of SDK
+     */
+    public function testDesignModule()
+    {
+        $this->startMessage('Design module testing start......');
+        $designRepository = new DesignRepository($this->client);
+
+        $design = new Design();
+        $design->setEditorUserHash(md5('hashing_string'));
+        $design->setReturnUrl(config('connect.shop_url'));
+        $design->setCancelUrl(config('connect.shop_url'));
+        $design->setSku('TESTPRODUCT-UPLOAD1');
+        $design->setIntent('upload');
+        $design->setOptions([
+            'example-key' => 'example-value'
+        ]);
+
+        // Create editor user hash
+        try {
+            $this->info('Generating Editor user hash....');
+            $userHash = $designRepository->createEditorUserHash($design);
+            $design->setEditorUserHash($userHash['editor_user_hash']);
+            $this->info('Editor user hash generate successfully!');
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+            $this->stopMessage();
+        }
+
+        // Create Design
+        try {
+            $this->info('Create design....');
+            $designRepository->create($design);
+
+            if ($design->getId()) {
+                $this->info('Design created successfully!');
+            }
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+            $this->stopMessage();
+        }
+
+        // Submit Design
+        try {
+            $this->info('Submitting design....');
+            $designRepository->submit($design->getId());
+            $this->info('Design submitted successfully!');
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+            $this->stopMessage();
+        }
+
+        // Get Preview
+        try {
+            $this->info('Trying to get preview.....');
+            $designRepository->getPreviewPDF($design->getId());
+            $this->info('Preview received successfully!');
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+            $this->stopMessage();
+        }
+
+        // Save Preview
+        try {
+            $this->info('Trying preview save .....');
+            $designRepository->savePreview($design->getId(), 'preview.pdf');
+            $this->info('Preview saved successfully!');
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->warn($e->getMessage());
+            $this->stopMessage();
+        }
+
+        $this->info('Design module testing finished!');
+    }
+
+    /**
+     * test sdk module for orders
+     */
+    public function testOrdersModule()
+    {
+        $this->startMessage('Orders module testing under development...');
+    }
+
+    /**
+     * Start testing of new modules (Show hiding)
+     *
+     * @param $title
+     */
+    public function startMessage($title)
+    {
+        $this->info('************************************************************************************************************************************************');
+        $this->info($title);
+        $this->info('************************************************************************************************************************************************');
+    }
+
+    /**
+     * This method can be used to stop testing
+     */
+    public function stopMessage(): int
+    {
+        $this->error('Testing stopped!');
+        return 0;
+    }
+}
