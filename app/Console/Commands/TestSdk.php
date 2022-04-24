@@ -88,10 +88,14 @@ class TestSdk extends Command
         # Test Orders Module
         $this->testOrdersModule();
         $this->info('');
-        */
 
         # Test product export
         $this->testProductExport();
+        $this->info('');
+        */
+
+        # Test product import
+        $this->testProductImport();
         $this->info('');
 
         return 0;
@@ -275,6 +279,7 @@ class TestSdk extends Command
 
         $productExport = new \MyPromo\Connect\SDK\Models\ProductExport();
 
+        $productExport->setTempletaId(null);
         $productExport->setTempletaKey('prices');
         $productExport->setFormat('xslx');
 
@@ -312,6 +317,50 @@ class TestSdk extends Command
             return 0;
         }
 
+    }
+
+    /*
+     * test sdk module for product import
+     */
+    public function testProductImport()
+    {
+        $this->startMessage('Product Import Module testing...');
+
+        $productImport = new \MyPromo\Connect\SDK\Models\ProductImport();
+        $productImport->setTempletaId(null);
+        $productImport->setTempletaKey('prices');
+        $productImport->setDryRun(true);
+
+        $productImportInput = new \MyPromo\Connect\SDK\Helpers\ProductImportInput();
+        $productImportInput->setUrl('https://downloads.test.mypromo.com/feeds/Merchant-Prices.xlsx');
+        $productImportInput->setFormat('xlsx');
+        $productImport->setInput($productImportInput);
+
+        $callback = new \MyPromo\Connect\SDK\Models\Callback();
+        $callback->setUrl("https://webhook.site/40b38be3-a76b-4dae-83cc-7bb1a5b7f8a3");
+        $productImport->setCallback($callback);
+
+        $requestImportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductImportRepository($this->client);
+
+
+        dd($productImport->toArray());
+
+        try {
+            $this->info('Sending Import Request');
+
+            $requestImportResponse = $requestImportRepository->requestImport($productImport);
+            $this->info(print_r($requestImportResponse, 1));
+
+            if ($productImport->getId()) {
+                $this->info('Import with ID ' . $productImport->getId() . 'created successfully!');
+            }
+        } catch (GuzzleException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        } catch (ProductImportException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
     }
 
     /**
