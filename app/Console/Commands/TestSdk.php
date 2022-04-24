@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use App\Services\ClientService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
+use MyPromo\Connect\SDK\Exceptions\ProductExportException;
 use Psr\Cache\InvalidArgumentException;
 
 use MyPromo\Connect\SDK\Exceptions\DesignException;
@@ -254,10 +255,7 @@ class TestSdk extends Command
 
         try {
             $designResponse = $designRepository->submit($design->getId());
-
             $this->info(print_r($designResponse, 1));
-            exit;
-
         } catch (GuzzleException $e) {
             $this->error($e->getMessage());
             return 0;
@@ -267,16 +265,24 @@ class TestSdk extends Command
         }
     }
 
+
+    /*
+     * test sdk module for product export
+     */
     public function testProductExport()
     {
+        $this->startMessage('Product Export Module testing...');
+
         $productExport = new \MyPromo\Connect\SDK\Models\ProductExport();
+
         $productExport->setTempletaKey('prices');
+        $productExport->setFormat('xslx');
 
         $productExportFilterOptions = new \MyPromo\Connect\SDK\Helpers\ProductExportFilterOptions();
         $productExportFilterOptions->setCategoryId(null);
         $productExportFilterOptions->setCurrency('EUR');
         $productExportFilterOptions->setLang('DE');
-        $productExportFilterOptions->setProductTypes("all");
+        $productExportFilterOptions->setProductTypes($productExportFilterOptions::ProductExportFilterOptionsProductTypeAll);
         $productExportFilterOptions->setSearch(null);
         $productExportFilterOptions->setSku(null);
         $productExportFilterOptions->setShippingFrom('DE');
@@ -284,8 +290,28 @@ class TestSdk extends Command
 
         $callback = new \MyPromo\Connect\SDK\Models\Callback();
         $callback->setUrl("https://webhook.site/40b38be3-a76b-4dae-83cc-7bb1a5b7f8a3");
-
         $productExport->setCallback($callback);
+
+        $requestExportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductExportRepository($this->client);
+
+
+        try {
+            $this->info('Sending Export Request');
+
+            $requestExportResponse = $requestExportRepository->requestExport($productExport);
+            $this->info(print_r($requestExportResponse, 1));
+
+            if ($productExport->getId()) {
+                $this->info('Export with ID ' . $productExport->getId() . 'created successfully!');
+            }
+        } catch (GuzzleException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        } catch (ProductExportException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
+
     }
 
     /**
