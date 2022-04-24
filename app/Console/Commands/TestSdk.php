@@ -7,10 +7,13 @@ use GuzzleHttp\Client;
 use App\Services\ClientService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
+use Psr\Cache\InvalidArgumentException;
+
 use MyPromo\Connect\SDK\Exceptions\DesignException;
 use MyPromo\Connect\SDK\Models\Design;
 use MyPromo\Connect\SDK\Repositories\Designs\DesignRepository;
-use Psr\Cache\InvalidArgumentException;
+use MyPromo\Connect\SDK\Models\ProductExport;
+use MyPromo\Connect\SDK\Helpers\ProductExportFilterOptions;
 
 class TestSdk extends Command
 {
@@ -156,7 +159,7 @@ class TestSdk extends Command
             $designRepository->create($design);
 
             if ($design->getId()) {
-                $this->info('Design created successfully!');
+                $this->info('Design with ID ' . $design->getId() . 'created successfully!');
             }
         } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
@@ -229,15 +232,15 @@ class TestSdk extends Command
         }
 
         if (!isset($hash['editor_user_hash'])) {
-            $this->error('Editor hash nbot found.');
+            $this->error('Editor hash not found.');
             return 0;
         }
 
         $design->setEditorUserHash($hash['editor_user_hash']);
         $design->setReturnUrl('https://yourshop.com/basket/TPD123LD02LAXALOP/{DESIGNID}/add/{INTENT}/{USERHASH}/{INTENT}/{DESIGNID}');
         $design->setCancelUrl('https://yourshop.com/product/TPD123LD02LAXALOP/design/{DESIGNID}/user/{USERHASH}');
-        $design->setSku('MP-F1-C0000005');
-        $design->setIntent('upload');
+        $design->setSku('MP-F10005-C0000001');
+        $design->setIntent('customize');
 
         $designResponse = $designRepository->create($design);
 
@@ -245,6 +248,10 @@ class TestSdk extends Command
 
         try {
             $designResponse = $designRepository->submit($design->getId());
+
+            $this->info(print_r($designResponse, 1));
+            exit;
+
         } catch (GuzzleException $e) {
             $this->error($e->getMessage());
             return 0;
@@ -252,6 +259,24 @@ class TestSdk extends Command
             $this->error($e->getMessage());
             return 0;
         }
+    }
+
+    public function testProductExport()
+    {
+        $productExport = new \MyPromo\Connect\SDK\Models\ProductExport();
+        $productExport->setTempletaKey('prices');
+
+        $productExportFilterOptions = new \MyPromo\Connect\SDK\Helpers\ProductExportFilterOptions();
+        $productExportFilterOptions->setCategoryId(null);
+        $productExportFilterOptions->setCurrency('EUR');
+        $productExportFilterOptions->setLang('DE');
+        $productExportFilterOptions->setProductTypes(null);
+        $productExportFilterOptions->setSearch(null);
+        $productExportFilterOptions->setSku(null);
+        $productExportFilterOptions->setShippingFrom('DE');
+        $productExport->setFilters($productExportFilterOptions);
+
+        $productExport->setCallback($callback);
     }
 
     /**
