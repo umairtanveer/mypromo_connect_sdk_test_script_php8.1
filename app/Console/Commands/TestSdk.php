@@ -329,7 +329,7 @@ class TestSdk extends Command
         $productImport = new \MyPromo\Connect\SDK\Models\ProductImport();
         $productImport->setTempletaId(null);
         $productImport->setTempletaKey('prices');
-        $productImport->setDryRun(true);
+        $productImport->setDryRun(false);
         $productImport->setDateExecute(null);
 
         $productImportInput = new \MyPromo\Connect\SDK\Helpers\ProductImportInput();
@@ -344,7 +344,7 @@ class TestSdk extends Command
         $requestImportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductImportRepository($this->client);
 
 
-        #dd($productImport->toArray());
+        dd($productImport->toArray());
 
         try {
             $this->info('Sending Import Request');
@@ -356,9 +356,11 @@ class TestSdk extends Command
                 $this->info('Import with ID ' . $productImport->getId() . 'created successfully!');
             }
         } catch (GuzzleException $e) {
+
             $this->error($e->getMessage());
             return 0;
         } catch (ProductImportException | InvalidArgumentException $e) {
+
             $this->error($e->getMessage());
             return 0;
         }
