@@ -8,6 +8,7 @@ use App\Services\ClientService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
 use MyPromo\Connect\SDK\Exceptions\ProductExportException;
+use MyPromo\Connect\SDK\Exceptions\GeneralException;
 use Psr\Cache\InvalidArgumentException;
 
 use MyPromo\Connect\SDK\Exceptions\DesignException;
@@ -88,15 +89,29 @@ class TestSdk extends Command
         # Test Orders Module
         $this->testOrdersModule();
         $this->info('');
+        */
 
         # Test product export
         $this->testProductExport();
         $this->info('');
-        */
+
 
         # Test product import
         $this->testProductImport();
         $this->info('');
+
+        # Test configuratior
+        $this->testProductConfigurator();
+        $this->info('');
+
+        # Test production
+        $this->testProduction();
+        $this->info('');
+
+        # Test Miscellaneous
+        $this->testMiscellaneous();
+        $this->info('');
+
 
         return 0;
     }
@@ -277,6 +292,14 @@ class TestSdk extends Command
     {
         $this->startMessage('Product Export Module testing...');
 
+
+        $requestExportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductExportRepository($this->client);
+
+        /*
+         * TODO error in API - CO2291
+         *
+        $this->startMessage('Requesting new export...');
+
         $productExport = new \MyPromo\Connect\SDK\Models\ProductExport();
 
         $productExport->setTempletaId(null);
@@ -297,9 +320,6 @@ class TestSdk extends Command
         $callback->setUrl("https://webhook.site/40b38be3-a76b-4dae-83cc-7bb1a5b7f8a3");
         $productExport->setCallback($callback);
 
-        $requestExportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductExportRepository($this->client);
-
-
         try {
             $this->info('Sending Export Request');
 
@@ -316,6 +336,36 @@ class TestSdk extends Command
             $this->error($e->getMessage());
             return 0;
         }
+        */
+
+
+        /*
+        $this->startMessage('Request data of newly created export...');
+
+        // TODO: Add try catch after the solution has been fixed - see CO-2293
+        $requestExportByIdResponse = $requestExportRepository->find($productExport->getId());
+        $this->info(print_r($requestExportByIdResponse, 1));
+
+        // TODO: add cancel, delete
+
+        */
+
+        $this->startMessage('Request data of all exports...');
+
+        // TODO: Add try catch after the solution has been fixed - see CO-2293
+        $productExportOptions = new \MyPromo\Connect\SDK\Helpers\ProductExportOptions();
+        $productExportOptions->setPage(1); // get data from this page number
+        $productExportOptions->setPerPage(5);
+        $productExportOptions->setPagination(false);
+        #$productExportOptions->setCreatedFrom(new \DateTime(date('Y-m-d H:i:s')));
+        #$productExportOptions->setCreatedTo(new \DateTime(date('Y-m-d H:i:s')));
+
+        $this->info(print_r($productExportOptions->toArray(), 1));
+
+        $requestExportAllResponse = $requestExportRepository->all($productExportOptions);
+
+        $this->info(print_r($requestExportAllResponse, 1));
+
 
     }
 
@@ -326,6 +376,9 @@ class TestSdk extends Command
     {
         $this->startMessage('Product Import Module testing...');
 
+        $requestImportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductImportRepository($this->client);
+
+        /*
         $productImport = new \MyPromo\Connect\SDK\Models\ProductImport();
         $productImport->setTempletaId(null);
         $productImport->setTempletaKey('prices');
@@ -341,9 +394,7 @@ class TestSdk extends Command
         $callback->setUrl("https://webhook.site/40b38be3-a76b-4dae-83cc-7bb1a5b7f8a3");
         $productImport->setCallback($callback);
 
-        $requestImportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductImportRepository($this->client);
-
-
+        // TODO: payload looks goot but not working !!
         dd($productImport->toArray());
 
         try {
@@ -364,7 +415,143 @@ class TestSdk extends Command
             $this->error($e->getMessage());
             return 0;
         }
+        */
+
+
+        /*
+        $this->startMessage('Request data of newly created import...');
+
+        // TODO: Add try catch after the solution has been fixed - see CO-2293
+        $requestImportByIdResponse = $requestImportRepository->find($productImport->getId());
+        $this->info(print_r($requestImportByIdResponse, 1));
+
+        // TODO: add confirm, validate, cancel, delete
+
+        */
+
+        $this->startMessage('Request data of all imports...');
+
+        // TODO: Add try catch after the solution has been fixed - see CO-2293
+        $productImportOptions = new \MyPromo\Connect\SDK\Helpers\ProductImportOptions();
+        $productImportOptions->setPage(1); // get data from this page number
+        $productImportOptions->setPerPage(5);
+        $productImportOptions->setPagination(false);
+        #$productImportOptions->setCreatedFrom(new \DateTime(date('Y-m-d H:i:s')));
+        #$productImportOptions->setCreatedTo(new \DateTime(date('Y-m-d H:i:s')));
+
+        $this->info(print_r($productImportOptions->toArray(), 1));
+
+        $requestImportAllResponse = $requestImportRepository->all($productImportOptions);
+
+        $this->info(print_r($requestImportAllResponse, 1));
+
     }
+
+
+    /*
+     * testProductConfigurator
+     */
+    public function testProductConfigurator()
+    {
+        $this->startMessage('TODO - testProductConfigurator');
+    }
+
+
+    /*
+     * testProduction
+     */
+    public function testProduction()
+    {
+        $this->startMessage('TODO - testProduction');
+    }
+
+    /*
+     * testMiscellaneous
+     */
+    public function testMiscellaneous()
+    {
+        $this->startMessage('testMiscellaneous');
+
+        $this->testDetail('get api status');
+        $generalRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\GeneralRepository($this->client);
+
+        try {
+            $apiStatusResponse = $generalRepository->apiStatus();
+            $this->info(print_r($apiStatusResponse, true));
+        } catch (GuzzleException | GeneralException | InvalidArgumentException $e)
+        {
+            $this->error($e->getMessage());
+            return 0;
+        }
+
+
+        // TODO - just identifier or complete urls required ???
+        $url = "blablabla";
+        $fileContent = $generalRepository->downloadFile($url);
+
+
+        $this->testDetail('get carriers');
+        $carrierRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\CarrierRepository($this->client);
+
+        $carrierOptions = new \MyPromo\Connect\SDK\Helpers\CarrierOptions();
+        $carrierOptions->setPage(1);
+        $carrierOptions->setPerPage(5);
+        $carrierOptions->setPagination(false);
+
+        $carrierResponse = $carrierRepository->all($carrierOptions);
+        $this->info(print_r($carrierResponse, true));
+
+
+        $this->testDetail('get countries');
+        $countryRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\CountryRepository($this->client);
+
+        $countryOptions = new \MyPromo\Connect\SDK\Helpers\CountryOptions();
+        $countryOptions->setPage(1);
+        $countryOptions->setPerPage(5);
+        $countryOptions->setPagination(false);
+
+        $countryResponse = $countryRepository->all($countryOptions);
+        $this->info(print_r($countryResponse, true));
+
+
+        $this->testDetail('get locales');
+        $localeRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\LocaleRepository($this->client);
+
+        $localeOptions = new \MyPromo\Connect\SDK\Helpers\LocaleOptions();
+        $localeOptions->setPage(1);
+        $localeOptions->setPerPage(5);
+        $localeOptions->setPagination(false);
+
+        $localeResponse = $localeRepository->all($localeOptions);
+        $this->info(print_r($localeResponse, true));
+
+
+        $this->testDetail('get states');
+        $stateRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\StateRepository($this->client);
+
+        $stateOptions = new \MyPromo\Connect\SDK\Helpers\LocaleOptions();
+        $stateOptions->setPage(1);
+        $stateOptions->setPerPage(5);
+        $stateOptions->setPagination(false);
+
+        $stateResponse = $stateRepository->all($stateOptions);
+        $this->info(print_r($stateResponse, true));
+
+
+        $this->testDetail('get timezones');
+        $timeZonesRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\TimezoneRepository($this->client);
+
+        $timeZonesOptions = new \MyPromo\Connect\SDK\Helpers\LocaleOptions();
+        $timeZonesOptions->setPage(1);
+        $timeZonesOptions->setPerPage(5);
+        $timeZonesOptions->setPagination(false);
+
+        $timeZonesResponse = $timeZonesRepository->all($timeZonesOptions);
+        $this->info(print_r($timeZonesResponse, true));
+
+
+    }
+
 
     /**
      * Start testing of new modules (Show hiding)
@@ -376,6 +563,13 @@ class TestSdk extends Command
         $this->info('************************************************************************************************************************************************');
         $this->info($title);
         $this->info('************************************************************************************************************************************************');
+    }
+
+    public function testDetail($title)
+    {
+        $this->info('------------------------------------------------------------------------------------------------------------------------------------------------');
+        $this->info($title);
+        $this->info('------------------------------------------------------------------------------------------------------------------------------------------------');
     }
 
     /**
