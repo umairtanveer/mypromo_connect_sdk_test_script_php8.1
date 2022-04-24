@@ -330,6 +330,7 @@ class TestSdk extends Command
         $productImport->setTempletaId(null);
         $productImport->setTempletaKey('prices');
         $productImport->setDryRun(true);
+        $productImport->setDateExecute(null);
 
         $productImportInput = new \MyPromo\Connect\SDK\Helpers\ProductImportInput();
         $productImportInput->setUrl('https://downloads.test.mypromo.com/feeds/Merchant-Prices.xlsx');
@@ -343,7 +344,7 @@ class TestSdk extends Command
         $requestImportRepository = new \MyPromo\Connect\SDK\Repositories\ProductFeeds\ProductImportRepository($this->client);
 
 
-        dd($productImport->toArray());
+        #dd($productImport->toArray());
 
         try {
             $this->info('Sending Import Request');
