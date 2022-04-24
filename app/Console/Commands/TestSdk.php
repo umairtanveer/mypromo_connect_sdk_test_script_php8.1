@@ -79,12 +79,18 @@ class TestSdk extends Command
         $this->makeConnectionWithClient();
         $this->info('');
 
+        /*
         # Test Design Module
         $this->testDesignModule();
         $this->info('');
 
         # Test Orders Module
         $this->testOrdersModule();
+        $this->info('');
+        */
+
+        # Test product export
+        $this->testProductExport();
         $this->info('');
 
         return 0;
@@ -270,11 +276,14 @@ class TestSdk extends Command
         $productExportFilterOptions->setCategoryId(null);
         $productExportFilterOptions->setCurrency('EUR');
         $productExportFilterOptions->setLang('DE');
-        $productExportFilterOptions->setProductTypes(null);
+        $productExportFilterOptions->setProductTypes("all");
         $productExportFilterOptions->setSearch(null);
         $productExportFilterOptions->setSku(null);
         $productExportFilterOptions->setShippingFrom('DE');
         $productExport->setFilters($productExportFilterOptions);
+
+        $callback = new \MyPromo\Connect\SDK\Models\Callback();
+        $callback->setUrl("https://webhook.site/40b38be3-a76b-4dae-83cc-7bb1a5b7f8a3");
 
         $productExport->setCallback($callback);
     }

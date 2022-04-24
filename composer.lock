@@ -1761,27 +1761,27 @@
         },
         {
             "name": "mypromo/connect-sdk",
-            "version": "V1.0.23",
+            "version": "v1.0.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/MyPromoConnect/connect-sdk.git",
-                "reference": "1b18b6f4c6b0638639f95cb1380030ca35d638df"
+                "reference": "f7218e9a12abfe57ec24a404d3b8944125d7744b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/MyPromoConnect/connect-sdk/zipball/1b18b6f4c6b0638639f95cb1380030ca35d638df",
-                "reference": "1b18b6f4c6b0638639f95cb1380030ca35d638df",
+                "url": "https://api.github.com/repos/MyPromoConnect/connect-sdk/zipball/f7218e9a12abfe57ec24a404d3b8944125d7744b",
+                "reference": "f7218e9a12abfe57ec24a404d3b8944125d7744b",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/guzzle": "^7.0.1",
-                "php": "^7.3",
-                "symfony/cache": "^5.2",
-                "symfony/validator": "^5.2"
+                "php": "^7.4|^8.0",
+                "symfony/cache": "^5.4",
+                "symfony/validator": "^5.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.4"
+                "phpunit/phpunit": "^9.5.10"
             },
             "type": "sdk",
             "autoload": {
@@ -1793,12 +1793,12 @@
             "license": [
                 "MIT"
             ],
-            "description": "SDK for connect",
+            "description": "SDK for the mypromo connect API",
             "support": {
                 "issues": "https://github.com/MyPromoConnect/connect-sdk/issues",
-                "source": "https://github.com/MyPromoConnect/connect-sdk/tree/V1.0.23"
+                "source": "https://github.com/MyPromoConnect/connect-sdk/tree/v1.0.31"
             },
-            "time": "2022-01-27T07:51:15+00:00"
+            "time": "2022-04-24T13:10:02+00:00"
         },
         {
             "name": "nesbot/carbon",
