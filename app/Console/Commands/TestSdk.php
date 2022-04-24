@@ -7,8 +7,14 @@ use GuzzleHttp\Client;
 use App\Services\ClientService;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
+use MyPromo\Connect\SDK\Exceptions\CarrierException;
+use MyPromo\Connect\SDK\Exceptions\CountryException;
+use MyPromo\Connect\SDK\Exceptions\LocaleException;
+use MyPromo\Connect\SDK\Exceptions\ProductException;
 use MyPromo\Connect\SDK\Exceptions\ProductExportException;
 use MyPromo\Connect\SDK\Exceptions\GeneralException;
+use MyPromo\Connect\SDK\Exceptions\StateException;
+use MyPromo\Connect\SDK\Exceptions\TimezoneException;
 use Psr\Cache\InvalidArgumentException;
 
 use MyPromo\Connect\SDK\Exceptions\DesignException;
@@ -90,6 +96,15 @@ class TestSdk extends Command
         $this->testOrdersModule();
         $this->info('');
         */
+
+
+
+        # Test products
+        $this->testProducts();
+        $this->info('');
+
+        dd('end');
+
 
         # Test product export
         $this->testProductExport();
@@ -447,6 +462,50 @@ class TestSdk extends Command
 
     }
 
+    /*
+     * testProducts
+     */
+    public function testProducts()
+    {
+        $this->startMessage('TODO - testProducts');
+
+        $productsRepository = new \MyPromo\Connect\SDK\Repositories\Products\ProductRepository($this->client);
+
+
+        $this->testDetail('get all products');
+        $productsOptions = new \MyPromo\Connect\SDK\Helpers\ProductOptions();
+        $productsOptions->setPage(1);
+        $productsOptions->setPerPage(5);
+        $productsOptions->setPagination(false);
+        $productsOptions->setShippingFrom('DE');
+
+        try {
+
+            // TODO: does not work!!
+            // Server error: `GET https://rf.dev.api.mypromo.com/v1/products?page=1&per_page=5&pagination=0&shipping_from=DE` resulted in a `500 Internal Server Error` response:
+            //{
+            //    "message": "Argument 1 passed to App\\Services\\ProductService::getProductMedia() must be an instance of App\\Mode (truncated...)
+
+            $productsResponse = $productsRepository->all($productsOptions);
+            $this->info(print_r($productsResponse, true));
+        } catch (GuzzleException | ProductException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
+
+
+        $this->error('The repository seems not to support all routes !!!');
+
+        // TODO - method for v1/jobs missing!
+        // we should remove route /v1/jobs and use /v1/products_import instead
+
+        // TODO - ATTENTION!
+        //
+        // SDK
+        // Repositories/Jobs/ConnectorJobRepository collidates with jobs!
+        // I moved POST Jobs and future GET jobs Routes into "Client - Jobs" in Postman, then we can keep it in "Jobs"
+    }
+
 
     /*
      * testProductConfigurator
@@ -454,6 +513,8 @@ class TestSdk extends Command
     public function testProductConfigurator()
     {
         $this->startMessage('TODO - testProductConfigurator');
+
+        $this->error('Could not find any repository for the configurator routes !!!');
     }
 
 
@@ -462,6 +523,7 @@ class TestSdk extends Command
      */
     public function testProduction()
     {
+        // TODO
         $this->startMessage('TODO - testProduction');
     }
 
@@ -478,8 +540,7 @@ class TestSdk extends Command
         try {
             $apiStatusResponse = $generalRepository->apiStatus();
             $this->info(print_r($apiStatusResponse, true));
-        } catch (GuzzleException | GeneralException | InvalidArgumentException $e)
-        {
+        } catch (GuzzleException | GeneralException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -500,8 +561,7 @@ class TestSdk extends Command
             // alternativly offer savetodisk option and filename in the method
             // eg. downloadFile($url, true, '/path/to/file.ext')
 
-        } catch (GuzzleException | GeneralException | InvalidArgumentException $e)
-        {
+        } catch (GuzzleException | GeneralException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -515,8 +575,13 @@ class TestSdk extends Command
         $carrierOptions->setPerPage(5);
         $carrierOptions->setPagination(false);
 
-        $carrierResponse = $carrierRepository->all($carrierOptions);
-        $this->info(print_r($carrierResponse, true));
+        try {
+            $carrierResponse = $carrierRepository->all($carrierOptions);
+            $this->info(print_r($carrierResponse, true));
+        } catch (GuzzleException | CarrierException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
         $this->testDetail('get countries');
@@ -527,8 +592,13 @@ class TestSdk extends Command
         $countryOptions->setPerPage(5);
         $countryOptions->setPagination(false);
 
-        $countryResponse = $countryRepository->all($countryOptions);
-        $this->info(print_r($countryResponse, true));
+        try {
+            $countryResponse = $countryRepository->all($countryOptions);
+            $this->info(print_r($countryResponse, true));
+        } catch (GuzzleException | CountryException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
         $this->testDetail('get locales');
@@ -539,8 +609,13 @@ class TestSdk extends Command
         $localeOptions->setPerPage(5);
         $localeOptions->setPagination(false);
 
-        $localeResponse = $localeRepository->all($localeOptions);
-        $this->info(print_r($localeResponse, true));
+        try {
+            $localeResponse = $localeRepository->all($localeOptions);
+            $this->info(print_r($localeResponse, true));
+        } catch (GuzzleException | LocaleException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
         $this->testDetail('get states');
@@ -551,8 +626,13 @@ class TestSdk extends Command
         $stateOptions->setPerPage(5);
         $stateOptions->setPagination(false);
 
-        $stateResponse = $stateRepository->all($stateOptions);
-        $this->info(print_r($stateResponse, true));
+        try {
+            $stateResponse = $stateRepository->all($stateOptions);
+            $this->info(print_r($stateResponse, true));
+        } catch (GuzzleException | StateException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
         $this->testDetail('get timezones');
@@ -563,8 +643,13 @@ class TestSdk extends Command
         $timeZonesOptions->setPerPage(5);
         $timeZonesOptions->setPagination(false);
 
-        $timeZonesResponse = $timeZonesRepository->all($timeZonesOptions);
-        $this->info(print_r($timeZonesResponse, true));
+        try {
+            $timeZonesResponse = $timeZonesRepository->all($timeZonesOptions);
+            $this->info(print_r($timeZonesResponse, true));
+        } catch (GuzzleException | TimezoneException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
     }
