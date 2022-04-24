@@ -486,8 +486,25 @@ class TestSdk extends Command
 
 
         // TODO - just identifier or complete urls required ???
-        $url = "blablabla";
-        $fileContent = $generalRepository->downloadFile($url);
+        $url = "A8ru29";
+
+        try {
+            // TODO - does not work!
+            //$fileContent = $generalRepository->downloadFile($url);
+
+            // TODO - this is results in error - sdk implementation is wrong!
+            // TypeError
+            //  MyPromo\Connect\SDK\Repositories\Miscellaneous\GeneralRepository::downloadFile(): Return value must be of type array, null returned
+
+            // TODO: create save method similar to $designRepository->savePreview($design->getId(), 'preview.pdf');
+            // alternativly offer savetodisk option and filename in the method
+            // eg. downloadFile($url, true, '/path/to/file.ext')
+
+        } catch (GuzzleException | GeneralException | InvalidArgumentException $e)
+        {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
 
         $this->testDetail('get carriers');
@@ -529,7 +546,7 @@ class TestSdk extends Command
         $this->testDetail('get states');
         $stateRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\StateRepository($this->client);
 
-        $stateOptions = new \MyPromo\Connect\SDK\Helpers\LocaleOptions();
+        $stateOptions = new \MyPromo\Connect\SDK\Helpers\StateOptions();
         $stateOptions->setPage(1);
         $stateOptions->setPerPage(5);
         $stateOptions->setPagination(false);
@@ -541,7 +558,7 @@ class TestSdk extends Command
         $this->testDetail('get timezones');
         $timeZonesRepository = new \MyPromo\Connect\SDK\Repositories\Miscellaneous\TimezoneRepository($this->client);
 
-        $timeZonesOptions = new \MyPromo\Connect\SDK\Helpers\LocaleOptions();
+        $timeZonesOptions = new \MyPromo\Connect\SDK\Helpers\TimezoneOptions();
         $timeZonesOptions->setPage(1);
         $timeZonesOptions->setPerPage(5);
         $timeZonesOptions->setPagination(false);
