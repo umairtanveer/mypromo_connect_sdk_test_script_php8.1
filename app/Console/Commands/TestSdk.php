@@ -86,6 +86,7 @@ class TestSdk extends Command
         # Test Connection
         $this->makeConnectionWithClient();
         $this->info('');
+
         /*
         # Test Design Module
         $this->testDesignModule();
@@ -95,8 +96,6 @@ class TestSdk extends Command
         $this->testOrdersModule();
         $this->info('');
         */
-
-
 
         # Test products
         $this->testProducts();
