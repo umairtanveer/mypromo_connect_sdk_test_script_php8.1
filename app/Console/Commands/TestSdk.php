@@ -8,8 +8,11 @@ use App\Services\ClientService;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
+use MyPromo\Connect\SDK\Exceptions\ApiRequestException;
+use MyPromo\Connect\SDK\Exceptions\ApiResponseException;
 use MyPromo\Connect\SDK\Exceptions\CarrierException;
 use MyPromo\Connect\SDK\Exceptions\CountryException;
+use MyPromo\Connect\SDK\Exceptions\InvalidResponseException;
 use MyPromo\Connect\SDK\Exceptions\LocaleException;
 use MyPromo\Connect\SDK\Exceptions\ProductException;
 use MyPromo\Connect\SDK\Exceptions\ProductExportException;
@@ -395,7 +398,7 @@ class TestSdk extends Command
         $productExportFilterOptions = new \MyPromo\Connect\SDK\Helpers\ProductExportFilterOptions();
         $productExportFilterOptions->setCategoryId(null);
         $productExportFilterOptions->setCurrency('EUR');
-        $productExportFilterOptions->setLang('DEA');
+        $productExportFilterOptions->setLang('DE');
         $productExportFilterOptions->setProductTypes($productExportFilterOptions::ProductExportFilterOptionsProductTypeAll);
         $productExportFilterOptions->setSearch(null);
         $productExportFilterOptions->setSku(null);
@@ -415,8 +418,10 @@ class TestSdk extends Command
             if ($productExport->getId()) {
                 $this->info('Export with ID ' . $productExport->getId() . 'created successfully!');
             }
-        } catch (ProductExportException $e) {
-            $this->error('Creating Export Request failed: ' . $e->getApiResultMessage() . ' - Errors: ' . print_r($e->getApiResultErrors(),true));
+        } catch (ApiResponseException | InvalidResponseException $e) {
+            $this->error('Creating Export Request failed: ' . $e->getMessage() . ' - Errors: ' . print_r($e->getErrors(),true) .' - HHTP_CODE: ' . $e->getCode());
+            return 0;
+        } catch (ApiRequestException $e) {
             $this->error($e->getMessage());
             return 0;
         }
