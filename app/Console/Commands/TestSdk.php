@@ -98,19 +98,19 @@ class TestSdk extends Command
 
 
         # Test Orders Module
-        $this->testOrdersModule();
-        $this->info('');
-
-        dd('end');
+        #$this->testOrdersModule();
+        #$this->info('');
 
 
         # Test products
-        $this->testProducts();
-        $this->info('');
+        #$this->testProducts();
+        #$this->info('');
 
         # Test product export
         $this->testProductExport();
         $this->info('');
+
+        dd('end');
 
 
         # Test product import
@@ -260,7 +260,6 @@ class TestSdk extends Command
         }
 
 
-
         if (!isset($hash['editor_user_hash'])) {
             $this->error('Editor hash not found.');
             return 0;
@@ -384,6 +383,7 @@ class TestSdk extends Command
         /*
          * TODO error in API - CO2291
          *
+         */
         $this->startMessage('Requesting new export...');
 
         $productExport = new \MyPromo\Connect\SDK\Models\ProductExport();
@@ -395,7 +395,7 @@ class TestSdk extends Command
         $productExportFilterOptions = new \MyPromo\Connect\SDK\Helpers\ProductExportFilterOptions();
         $productExportFilterOptions->setCategoryId(null);
         $productExportFilterOptions->setCurrency('EUR');
-        $productExportFilterOptions->setLang('DE');
+        $productExportFilterOptions->setLang('DEA');
         $productExportFilterOptions->setProductTypes($productExportFilterOptions::ProductExportFilterOptionsProductTypeAll);
         $productExportFilterOptions->setSearch(null);
         $productExportFilterOptions->setSku(null);
@@ -415,14 +415,13 @@ class TestSdk extends Command
             if ($productExport->getId()) {
                 $this->info('Export with ID ' . $productExport->getId() . 'created successfully!');
             }
-        } catch (GuzzleException $e) {
-            $this->error($e->getMessage());
-            return 0;
-        } catch (ProductExportException | InvalidArgumentException $e) {
+        } catch (ProductExportException $e) {
+            $this->error('Creating Export Request failed: ' . $e->getApiResultMessage() . ' - Errors: ' . print_r($e->getApiResultErrors(),true));
             $this->error($e->getMessage());
             return 0;
         }
-        */
+
+        dd('die export');
 
 
         /*
