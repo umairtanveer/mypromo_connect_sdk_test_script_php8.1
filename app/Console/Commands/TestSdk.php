@@ -478,12 +478,6 @@ class TestSdk extends Command
         $productsOptions->setShippingFrom('DE');
 
         try {
-
-            // TODO: does not work!!
-            // Server error: `GET https://rf.dev.api.mypromo.com/v1/products?page=1&per_page=5&pagination=0&shipping_from=DE` resulted in a `500 Internal Server Error` response:
-            //{
-            //    "message": "Argument 1 passed to App\\Services\\ProductService::getProductMedia() must be an instance of App\\Mode (truncated...)
-
             $productsResponse = $productsRepository->all($productsOptions);
             $this->info(print_r($productsResponse, true));
         } catch (GuzzleException | ProductException | InvalidArgumentException $e) {
@@ -492,16 +486,25 @@ class TestSdk extends Command
         }
 
 
-        $this->error('The repository seems not to support all routes !!!');
+        $this->testDetail('get seo overwrites');
 
-        // TODO - method for v1/jobs missing!
-        // we should remove route /v1/jobs and use /v1/products_import instead
+        $seoOptions = new \MyPromo\Connect\SDK\Helpers\SeoOptions();
+        $seoOptions->setPage(1);
+        $seoOptions->setPerPage(5);
+        $seoOptions->setPagination(false);
+        //$seoOptions->setSku('MP-F10005-C0000001');
 
-        // TODO - ATTENTION!
-        //
-        // SDK
-        // Repositories/Jobs/ConnectorJobRepository collidates with jobs!
-        // I moved POST Jobs and future GET jobs Routes into "Client - Jobs" in Postman, then we can keep it in "Jobs"
+        try {
+            $productsResponse = $productsRepository->getSeo($seoOptions);
+            $this->info(print_r($productsResponse, true));
+        } catch (GuzzleException | ProductException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
+
+
+        $this->error('Some more tests have to be added here !!!');
+
     }
 
 
