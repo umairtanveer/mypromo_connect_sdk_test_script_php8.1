@@ -15,6 +15,7 @@ use MyPromo\Connect\SDK\Exceptions\ProductExportException;
 use MyPromo\Connect\SDK\Exceptions\GeneralException;
 use MyPromo\Connect\SDK\Exceptions\StateException;
 use MyPromo\Connect\SDK\Exceptions\TimezoneException;
+use MyPromo\Connect\SDK\Repositories\Orders\OrderRepository;
 use Psr\Cache\InvalidArgumentException;
 
 use MyPromo\Connect\SDK\Exceptions\DesignException;
@@ -87,10 +88,12 @@ class TestSdk extends Command
         $this->makeConnectionWithClient();
         $this->info('');
 
+        /*
         # Test Design Module
         $this->testDesignModule();
         $this->info('');
         dd('end');
+        */
 
 
         # Test Orders Module
@@ -288,10 +291,67 @@ class TestSdk extends Command
             return 0;
         }
 
-        dd('orders die');
-
         $this->info('Create an order');
 
+        $orderRepository = new OrderRepository($this->client);
+
+        $recipientAddress = new \MyPromo\Connect\SDK\Models\Address();
+        $recipientAddress->setAddressId(null);
+        $recipientAddress->setAddressKey(null);
+        $recipientAddress->setReference('your-reference-code');
+        $recipientAddress->setCompany('Sample Company');
+        $recipientAddress->setDepartment(null);
+        $recipientAddress->setSalutation(null);
+        $recipientAddress->setGender(null);
+        $recipientAddress->setDateOfBirth(new \DateTime(date('Y-m-d H:i:s')));
+        $recipientAddress->setFirstname('Sam');
+        $recipientAddress->setMiddlename(null);
+        $recipientAddress->setLastname('Sample');
+        $recipientAddress->setStreet('Sample Street 1');
+        $recipientAddress->setCareOf('Street Add');
+        $recipientAddress->setZip(12345);
+        $recipientAddress->setCity('Sample Town');
+        $recipientAddress->setStateCode('NW');
+        $recipientAddress->setDistrict('your-disctrict');
+        $recipientAddress->setCountryCode('DE');
+        $recipientAddress->setPhone('your-phone');
+        $recipientAddress->setFax('your-fax');
+        $recipientAddress->setMobile('your-mobile');
+        $recipientAddress->setEmail('sam@sample.com');
+        $recipientAddress->setVatId('DE1234567890');
+        $recipientAddress->setEoriNumber('55555555555');
+        $recipientAddress->setAccountHolder('account-holder');
+        $recipientAddress->setIban('your-iban');
+        $recipientAddress->setBicOrSwift('your-bic-or-swift');
+        $recipientAddress->setCommercialRegisterEntry('your-commercial-register-entry');
+
+
+        $order = new \MyPromo\Connect\SDK\Models\Order();
+        $order->setReference('your-order-reference');
+        $order->setReference2('your-order-reference2');
+        $order->setComment('your comment for order here');
+        //$order->setShipper($shipperAddress);
+        $order->setRecipient($recipientAddress);
+        //$order->setExport($exportAddress);
+        //$order->setInvoice($invoiceAddress);
+
+        # Optional parameters
+        $order->setFakePreflight(true);
+        $order->setFakeShipment(true);
+
+
+        try {
+            $this->info('Sending order');
+            $orderResponse = $orderRepository->create($order);
+            $this->info(print_r($orderResponse, 1));
+        } catch (GuzzleException | OrderException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
+
+        dd('stop here');
+
+        $this->info('Create an item');
 
         $orderItem = new \MyPromo\Connect\SDK\Models\OrderItem();
         $orderItem->setReference('your-reference');
