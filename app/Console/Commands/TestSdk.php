@@ -87,22 +87,22 @@ class TestSdk extends Command
         $this->makeConnectionWithClient();
         $this->info('');
 
-        /*
         # Test Design Module
         $this->testDesignModule();
         $this->info('');
+        dd('end');
+
 
         # Test Orders Module
         $this->testOrdersModule();
         $this->info('');
-        */
+
+        dd('end');
+
 
         # Test products
         $this->testProducts();
         $this->info('');
-
-        dd('end');
-
 
         # Test product export
         $this->testProductExport();
@@ -198,7 +198,7 @@ class TestSdk extends Command
             $designRepository->create($design);
 
             if ($design->getId()) {
-                $this->info('Design with ID ' . $design->getId() . 'created successfully!');
+                $this->info('Design with ID ' . $design->getId() . ' created successfully!');
             }
         } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
@@ -245,26 +245,14 @@ class TestSdk extends Command
     {
         $this->startMessage('Orders module testing under development...');
 
-        $orderItem = new \MyPromo\Connect\SDK\Models\OrderItem();
-        $orderItem->setReference('your-reference');
-        $orderItem->setQuantity(35);
-        $orderItem->setOrderId(1);
-        $orderItem->setSku('product-sku');
-        $orderItem->setComment('comment for order item here');
-
-        # To add service item mention order_item_id in relation
-        $orderItemRelation = new \MyPromo\Connect\SDK\Models\OrderItemRelation();
-        $orderItemRelation->setOrderItemId(22);
-
-        # To set relation pass object of orderItemRelation after setting up order_item_id which is added previously in order
-        $orderItem->setRelation($orderItemRelation->toArray());
-
+        $this->info('Create a new design');
 
         $designRepository = new DesignRepository($this->client);
 
         $design = new Design();
 
         try {
+            $this->info('Create a new design user');
             $hash = $designRepository->createEditorUserHash($design);
         } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
@@ -281,20 +269,45 @@ class TestSdk extends Command
         $design->setSku('MP-F10005-C0000001');
         $design->setIntent('customize');
 
-        $designResponse = $designRepository->create($design);
+        try {
+            $this->info('Create a design with the design user');
+            $designResponse = $designRepository->create($design);
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+            $this->error($e->getMessage());
+            return 0;
+        }
 
         $this->info("Editor start URL : " . $designResponse['editor_start_url']);
 
         try {
+            $this->info('Submit the design');
             $designResponse = $designRepository->submit($design->getId());
             $this->info(print_r($designResponse, 1));
-        } catch (GuzzleException $e) {
-            $this->error($e->getMessage());
-            return 0;
-        } catch (DesignException | InvalidArgumentException $e) {
+        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
+
+        dd('orders die');
+
+        $this->info('Create an order');
+
+
+        $orderItem = new \MyPromo\Connect\SDK\Models\OrderItem();
+        $orderItem->setReference('your-reference');
+        $orderItem->setQuantity(35);
+        $orderItem->setOrderId(1);
+        $orderItem->setSku('product-sku');
+        $orderItem->setComment('comment for order item here');
+
+        # To add service item mention order_item_id in relation
+        $orderItemRelation = new \MyPromo\Connect\SDK\Models\OrderItemRelation();
+        $orderItemRelation->setOrderItemId(22);
+
+        # To set relation pass object of orderItemRelation after setting up order_item_id which is added previously in order
+        $orderItem->setRelation($orderItemRelation->toArray());
+
+
     }
 
 
