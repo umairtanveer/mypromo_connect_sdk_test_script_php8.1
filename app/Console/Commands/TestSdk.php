@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Exception;
 use GuzzleHttp\Client;
 use App\Services\ClientService;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Console\Command;
 use MyPromo\Connect\SDK\Exceptions\CarrierException;
@@ -156,10 +157,7 @@ class TestSdk extends Command
             }
 
             $this->info('Connection created successfully!');
-        } catch (Exception $ex) {
-            $this->warn($ex->getMessage());
-            $this->stopMessage();
-        } catch (GuzzleException | InvalidArgumentException $e) {
+        } catch (ClientException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
         }
 
@@ -190,7 +188,7 @@ class TestSdk extends Command
             $userHash = $designRepository->createEditorUserHash($design);
             $design->setEditorUserHash($userHash['editor_user_hash']);
             $this->info('Editor user hash generate successfully!');
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
             $this->stopMessage();
         }
@@ -203,7 +201,7 @@ class TestSdk extends Command
             if ($design->getId()) {
                 $this->info('Design with ID ' . $design->getId() . ' created successfully!');
             }
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
             $this->stopMessage();
         }
@@ -213,7 +211,7 @@ class TestSdk extends Command
             $this->info('Submitting design....');
             $designRepository->submit($design->getId());
             $this->info('Design submitted successfully!');
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
             $this->stopMessage();
         }
@@ -223,7 +221,7 @@ class TestSdk extends Command
             $this->info('Trying to get preview.....');
             $designRepository->getPreviewPDF($design->getId());
             $this->info('Preview received successfully!');
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
             $this->stopMessage();
         }
@@ -233,7 +231,7 @@ class TestSdk extends Command
             $this->info('Trying preview save .....');
             $designRepository->savePreview($design->getId(), 'preview.pdf');
             $this->info('Preview saved successfully!');
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->warn($e->getMessage());
             $this->stopMessage();
         }
@@ -257,9 +255,11 @@ class TestSdk extends Command
         try {
             $this->info('Create a new design user');
             $hash = $designRepository->createEditorUserHash($design);
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
         }
+
+
 
         if (!isset($hash['editor_user_hash'])) {
             $this->error('Editor hash not found.');
@@ -275,7 +275,7 @@ class TestSdk extends Command
         try {
             $this->info('Create a design with the design user');
             $designResponse = $designRepository->create($design);
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -286,7 +286,7 @@ class TestSdk extends Command
             $this->info('Submit the design');
             $designResponse = $designRepository->submit($design->getId());
             $this->info(print_r($designResponse, 1));
-        } catch (GuzzleException | DesignException | InvalidArgumentException $e) {
+        } catch (DesignException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -344,7 +344,7 @@ class TestSdk extends Command
             $this->info('Sending order');
             $orderResponse = $orderRepository->create($order);
             $this->info(print_r($orderResponse, 1));
-        } catch (GuzzleException | OrderException | InvalidArgumentException $e) {
+        } catch (OrderException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -553,7 +553,7 @@ class TestSdk extends Command
         try {
             $productsResponse = $productsRepository->all($productsOptions);
             $this->info(print_r($productsResponse, true));
-        } catch (GuzzleException | ProductException | InvalidArgumentException $e) {
+        } catch (ProductException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -570,7 +570,7 @@ class TestSdk extends Command
         try {
             $productsResponse = $productsRepository->getSeo($seoOptions);
             $this->info(print_r($productsResponse, true));
-        } catch (GuzzleException | ProductException | InvalidArgumentException $e) {
+        } catch (ProductException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -614,7 +614,7 @@ class TestSdk extends Command
         try {
             $apiStatusResponse = $generalRepository->apiStatus();
             $this->info(print_r($apiStatusResponse, true));
-        } catch (GuzzleException | GeneralException | InvalidArgumentException $e) {
+        } catch (GeneralException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -635,7 +635,7 @@ class TestSdk extends Command
             // alternativly offer savetodisk option and filename in the method
             // eg. downloadFile($url, true, '/path/to/file.ext')
 
-        } catch (GuzzleException | GeneralException | InvalidArgumentException $e) {
+        } catch (GeneralException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -652,7 +652,7 @@ class TestSdk extends Command
         try {
             $carrierResponse = $carrierRepository->all($carrierOptions);
             $this->info(print_r($carrierResponse, true));
-        } catch (GuzzleException | CarrierException | InvalidArgumentException $e) {
+        } catch (CarrierException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -669,7 +669,7 @@ class TestSdk extends Command
         try {
             $countryResponse = $countryRepository->all($countryOptions);
             $this->info(print_r($countryResponse, true));
-        } catch (GuzzleException | CountryException | InvalidArgumentException $e) {
+        } catch (CountryException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -686,7 +686,7 @@ class TestSdk extends Command
         try {
             $localeResponse = $localeRepository->all($localeOptions);
             $this->info(print_r($localeResponse, true));
-        } catch (GuzzleException | LocaleException | InvalidArgumentException $e) {
+        } catch (LocaleException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -703,7 +703,7 @@ class TestSdk extends Command
         try {
             $stateResponse = $stateRepository->all($stateOptions);
             $this->info(print_r($stateResponse, true));
-        } catch (GuzzleException | StateException | InvalidArgumentException $e) {
+        } catch (StateException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
@@ -720,7 +720,7 @@ class TestSdk extends Command
         try {
             $timeZonesResponse = $timeZonesRepository->all($timeZonesOptions);
             $this->info(print_r($timeZonesResponse, true));
-        } catch (GuzzleException | TimezoneException | InvalidArgumentException $e) {
+        } catch (TimezoneException | InvalidArgumentException $e) {
             $this->error($e->getMessage());
             return 0;
         }
